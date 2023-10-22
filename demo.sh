@@ -1,0 +1,1 @@
+python demo/demo.py webcam --config config/nanodet-plus-m_320.yml --model demo/model/nanodet-plus-m_320.pth --camid 0
