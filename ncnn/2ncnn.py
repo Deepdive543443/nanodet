@@ -13,7 +13,7 @@ class Script(nn.Module):
 
     def forward(self, x):
         x = self.model.forward(x)
-        x = x.permute(0, 2, 1)
+        # x = torch.transpose(x, 1, 2)
         return x
 
 
@@ -39,8 +39,19 @@ if __name__ == "__main__":
     x = torch.randn(1, 3, 320, 320)
     print(script(x).shape)
 
-    script = torch.jit.trace(script, x)
+    script = torch.jit.trace(script, torch.randn(1, 3, 320, 320))
     script.save(f"{args.save_script}.pt")
+
+    torch.onnx.export(script,         # model being run 
+    x,       # model input (or a tuple for multiple inputs) 
+    f"../ncnn_model/{args.save_script}.onnx",       # where to save the model  
+    export_params=True,  # store the trained parameter weights inside the model file 
+    opset_version=10,    # the ONNX version to export the model to 
+    do_constant_folding=True,  # whether to execute constant folding for optimization 
+    input_names = ['modelInput'],   # the model's input names 
+    ) 
+    print(" ") 
+    print('Model has been converted to ONNX')
     # print(model(x).shape)
     # script = torch.jit.trace(model, x)
     # script.save(f"{args.save_script}.pt")
