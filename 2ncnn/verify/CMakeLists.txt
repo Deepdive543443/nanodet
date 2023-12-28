@@ -6,7 +6,7 @@ project(${name_proj} VERSION 0.1.0 LANGUAGES C CXX)
 add_executable(${name_proj} main.cpp)
 
 
-set(ncnn_DIR ../../cpp_libs/ncnn-20231027-full-source/build/install/lib/cmake/ncnn CACHE PATH "Directory that contains ncnnConfig.cmake")
+set(ncnn_DIR ../../../../cpp_libs/ncnn-20231027-full-source/build/install/lib/cmake/ncnn CACHE PATH "Directory that contains ncnnConfig.cmake")
 # set(ncnn_DIR ../../cpp_libs/ncnn/x86/lib/cmake/ncnn CACHE PATH "Directory that contains ncnnConfig.cmake")
 find_package(ncnn REQUIRED)
 target_link_libraries(${name_proj} ncnn)
