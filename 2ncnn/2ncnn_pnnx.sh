@@ -1,4 +1,4 @@
-model=nanodet-plus-m_416
+model=nanodet-plus-m-1.5x_416
 
 python 2ncnn_pnnx.py \
   --config ../config/${model}.yml \

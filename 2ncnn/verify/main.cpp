@@ -1,7 +1,12 @@
 #include <iostream>
 #include <random>
+#include <unistd.h>
 
-#include "net.h"
+#include "net.h" //ncnn
+
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+// #include <opencv2/videoio.hpp> //opencv_mobile
 
 static std::default_random_engine generator;
 static std::normal_distribution<float> distribution(0.0, 1.0);
@@ -54,34 +59,61 @@ int main()
     // nanodet.load_param("../model/nanodet-plus-m-1.5x_416.param");
     // nanodet.load_model("../model/nanodet-plus-m-1.5x_416.bin");
 
-    nanodet.load_param("../quantize/nanodet-plus-m_416_int8.param");
-    nanodet.load_model("../quantize/nanodet-plus-m_416_int8.bin");
+    int target_size = 416;
+    nanodet.load_param("../quantize/nanodet-plus-m_320_int8.param");
+    nanodet.load_model("../quantize/nanodet-plus-m_320_int8.bin");
 
     const std::vector<const char*>& input_names = nanodet.input_names();
     const std::vector<const char*>& output_names = nanodet.output_names();
 
-    // for (auto name: input_names)
-    // {
-    //     std::cout << name << std::endl;
-    // }
 
-    // for (auto name: output_names)
-    // {
-    //     std::cout << name << std::endl;
-    // }
+    // Load image
+    cv::Mat inputs = cv::imread("../test.jpg");
+    int w = inputs.cols;
+    int h = inputs.rows;
+    float scale = 1.f;
 
-    ncnn::Mat input;
-    randn_ncnn(input, 416, 416, 3);
+    if (w > h)
+    {
+        scale = (float)target_size / w;
+        w = target_size;
+        h = h * scale;
+    }
+    else
+    {
+        scale = (float)target_size / h;
+        h = target_size;
+        w = w * scale;
+    }
+
+
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(inputs.data, ncnn::Mat::PIXEL_RGB2BGR, inputs.cols, inputs.rows, w, h);
+    ncnn::Mat in_pad;
+    int wpad = (w + 31) / 32 * 32 - w;
+    int hpad = (h + 31) / 32 * 32 - h;
+
+
+    ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 0.f);
+
     {
         ncnn::Extractor ex = nanodet.create_extractor();
-        ex.input("in0", input);
+        ex.input("data", in_pad);
         ncnn::Mat output;
-        ex.extract("out1", output);
+        ex.extract("output", output);
 
-        std::cout << "c: " << output.c << std::endl;
-        std::cout << "h: " << output.h << std::endl;
-        std::cout << "w: " << output.w << std::endl;
+        std::cout << "in_pad c: " << in_pad.c << std::endl;
+        std::cout << "in_pad h: " << in_pad.h << std::endl;
+        std::cout << "in_pad w: " << in_pad.w << std::endl;
+
+        std::cout << "output c: " << output.c << std::endl;
+        std::cout << "output h: " << output.h << std::endl;
+        std::cout << "output w: " << output.w << std::endl;
     }
+
+
+    cv::Mat output(target_size,target_size, CV_8UC3);
+    in_pad.to_pixels(output.data, ncnn::Mat::PIXEL_BGR2RGB);
+    cv::imwrite("out.jpg", output);
 
     return 0; 
 }
