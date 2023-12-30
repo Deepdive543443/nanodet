@@ -30,10 +30,10 @@ class LottaStageDetector(OneStageDetector):
             x4 = x[3]
 
         return (
-            x1[:, :80, ...], x1[:, 80:, ...],
-            x2[:, :80, ...], x2[:, 80:, ...],
-            x3[:, :80, ...], x3[:, 80:, ...],
-            x4[:, :80, ...], x4[:, 80:, ...]
+            torch.sigmoid(x1[:, :80, ...]), x1[:, 80:, ...],
+            torch.sigmoid(x2[:, :80, ...]), x2[:, 80:, ...],
+            torch.sigmoid(x3[:, :80, ...]), x3[:, 80:, ...],
+            torch.sigmoid(x4[:, :80, ...]), x4[:, 80:, ...]
         )
 
 def parse_args():
